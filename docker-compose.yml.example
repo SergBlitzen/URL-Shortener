@@ -38,8 +38,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  adminer:
-    image: adminer
-    ports:
-      - "9000:8080"
