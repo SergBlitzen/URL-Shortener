@@ -1,0 +1,45 @@
+volumes:
+  postgres_data:
+
+services:
+
+  web:
+    container_name: "short_links_backend"
+    build:
+      context:
+        .
+    command: bash -c "alembic upgrade head && uv run python src/main.py"
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    container_name: "short_links_db"
+    image:
+      postgres:16
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: "db"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "db"
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    ports:
+      - "9000:8080"
