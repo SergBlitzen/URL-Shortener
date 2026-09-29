@@ -19,4 +19,4 @@ wheels/
 docker-compose.yml
 sql.csv
 locustfile.py
-*/locust_results/
+locust_results/*
