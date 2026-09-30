@@ -20,3 +20,4 @@ docker-compose.yml
 sql.csv
 locustfile.py
 locust_results/*
+local_commands
