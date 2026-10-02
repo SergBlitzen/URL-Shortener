@@ -31,7 +31,7 @@ async def post_link(
 )
 async def get_link(
     code: ShortCodePath,
-    short_link_service = Depends(get_short_link_service)
+    short_link_service: ShortLinkServiceDep,
 ) -> RedirectResponse:
     link = await short_link_service.get_by_code(code)
     return RedirectResponse(
