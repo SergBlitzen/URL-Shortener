@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from config import settings
 from infra.db.pool_monitor import MonitoredSyncSession
 
+
 engine = create_async_engine(
     settings.postgres_url,
     pool_size=15,

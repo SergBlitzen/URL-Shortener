@@ -11,6 +11,8 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.orm import Session
 
+from config import settings
+
 logger = logging.getLogger("uvicorn.error")
 
 
@@ -149,9 +151,12 @@ class PoolMonitor:
         self.acquire_times_ms.append(duration_ms)
 
     async def run(self, interval: float = 1.0) -> None:
-        while True:
-            self.log_snapshot()
-            await asyncio.sleep(interval)
+        if settings.db_monitoring is True:
+            while True:
+                self.log_snapshot()
+                await asyncio.sleep(interval)
+        else:
+            pass
 
     def log_snapshot(self) -> None:
         pool = self.engine.sync_engine.pool

@@ -11,10 +11,7 @@ from infra.db.pool_monitor import PoolMonitor
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("LIFESPAN START", flush=True)
-
     pool_monitor = PoolMonitor(engine)
-    print("MONITOR CREATED", flush=True)
 
     app.state.pool_monitor = pool_monitor
 
