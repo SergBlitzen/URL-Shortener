@@ -7,6 +7,8 @@ from application.ports.uow import UnitOfWork
 from application.ports.utils import ShortCodeGenerator
 from domain.exceptions import InvalidUrlError
 from domain.models import ShortLink
+from infra.db.pool_monitor import PoolMonitor
+from infra.db.session_helpers import acquire_connection, timed_rollback
 
 
 class ShortLinkService:
@@ -19,9 +21,15 @@ class ShortLinkService:
     async def create_short_link(
         self,
         url: str,
+        pool_monitor: PoolMonitor | None = None,
     ) -> ShortLink:
 
         async with self.uow as uow:
+            uow.session = await acquire_connection(
+                uow.session,
+                pool_monitor,
+            )
+
             for _ in range(self.MAX_CREATE_ATTEMPTS):
                 try:
                     code = self.CODE_GENERATOR.generate()
@@ -39,6 +47,10 @@ class ShortLinkService:
                     return short_link
 
                 except ShortCodeConflict:
+                    await timed_rollback(
+                        uow.session,
+                        pool_monitor,
+                    )
                     await uow.rollback()
 
             raise ShortLinkCreationFailed()
@@ -46,9 +58,14 @@ class ShortLinkService:
     async def get_by_code(
         self,
         code: str,
+        pool_monitor: PoolMonitor | None = None,
     ) -> ShortLink:
 
         async with self.uow as uow:
+            # uow.session = await acquire_connection(
+            #     uow.session,
+            #     pool_monitor,
+            # )
             short_link = await uow.short_links.get_by_code(code)
 
             if short_link is None:

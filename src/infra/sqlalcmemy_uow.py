@@ -5,7 +5,11 @@ from infra.repositories import SQLAShortLinkRepository
 
 class SQLAlchemyUOW:
 
-    def __init__(self, session: AsyncSession, short_link_repo: SQLAShortLinkRepository):
+    def __init__(
+        self,
+        session: AsyncSession,
+        short_link_repo: SQLAShortLinkRepository
+    ):
         self.session = session
         self.short_links = short_link_repo
 

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi.params import Depends
 from starlette import status
+from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from api.dependencies import get_short_link_service, ShortLinkServiceDep, ShortCodePath
@@ -15,11 +16,13 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def post_link(
+    request: Request,
     link: ShortLinkCreate,
     short_link_service: ShortLinkServiceDep,
 ) -> ShortLinkCode:
     short_link = await short_link_service.create_short_link(
         url=link.url,
+        pool_monitor=request.app.state.pool_monitor,
     )
     return ShortLinkCode.from_domain(short_link)
 
@@ -30,10 +33,14 @@ async def post_link(
     status_code=status.HTTP_302_FOUND,
 )
 async def get_link(
+    request: Request,
     code: ShortCodePath,
     short_link_service: ShortLinkServiceDep,
 ) -> RedirectResponse:
-    link = await short_link_service.get_by_code(code)
+    link = await short_link_service.get_by_code(
+        code=code,
+        pool_monitor = request.app.state.pool_monitor,
+    )
     return RedirectResponse(
         link.url.value,
         status_code=status.HTTP_302_FOUND,
