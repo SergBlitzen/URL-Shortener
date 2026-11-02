@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     db_user: str
     db_pass: str
 
+    db_monitoring: bool = False
+
     @property
     def postgres_url(self):
         url = (
