@@ -34,6 +34,7 @@ class ShortLinkORM(Base):
     url: Mapped[str] = mapped_column(String)
     code: Mapped[str] = mapped_column(
         String(6),
+        index=True
     )
     clicks_count: Mapped[int] = mapped_column(
         default=0,
