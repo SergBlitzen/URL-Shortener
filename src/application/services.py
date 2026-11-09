@@ -62,11 +62,11 @@ class ShortLinkService:
     ) -> ShortLink:
 
         async with self.uow as uow:
-            # uow.session = await acquire_connection(
-            #     uow.session,
-            #     pool_monitor,
-            # )
-            short_link = await uow.short_links.get_by_code(code)
+            uow.session = await acquire_connection(
+                uow.session,
+                pool_monitor,
+            )
+            short_link = await uow.short_links.get_by_code_and_update_clicks(code)
 
             if short_link is None:
                 raise ShortLinkNotFound(code)

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,20 +31,30 @@ class SQLAShortLinkRepository:
 
             raise
 
-    async def get_by_code(
+    async def get_by_code_and_update_clicks(
         self,
-        code: str,
+        code: str
     ) -> ShortLink | None:
-        query = (select(ShortLinkORM)
-                 .where(ShortLinkORM.code == code))
+        stmt = (update(ShortLinkORM)
+                .where(ShortLinkORM.code == code)
+                .values(clicks_count=ShortLinkORM.clicks_count + 1)
+                ).returning(
+            ShortLinkORM.external_id,
+            ShortLinkORM.url,
+            ShortLinkORM.code,
+            ShortLinkORM.clicks_count
+        )
 
-        result = await self.session.scalars(query)
-        short_link_orm = result.one_or_none()
+        result = await self.session.execute(stmt)
+        short_link_data = result.fetchone()
+        short_link = ShortLink(
+            id=short_link_data[0],
+            url=Url(short_link_data[1]),
+            code=ShortCode(short_link_data[2]),
+            clicks_count=short_link_data[3],
+        )
 
-        if short_link_orm is not None:
-            return self._from_orm(short_link_orm)
-        else:
-            return None
+        return short_link
 
     async def save(
         self,
